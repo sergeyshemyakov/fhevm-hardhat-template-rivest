@@ -8,6 +8,7 @@ contract Spy {
     euint32 public secretRequirements; // encodes an array of 4 secret requirements, each 1 byte
     address[4] internal checkpointAddresses; // address[i] can set byte nubmer i starting from least significant
     address internal spyAddress;
+    uint32 public constant BYTE_MASK = 255;
 
     event RequirementUpdated(address indexed checkpointAddress, uint8 indexed checkpointIndex);
 
@@ -35,6 +36,7 @@ contract Spy {
             "Given checkpoint byte can not be accessed from this address"
         );
         euint32 secretReq32 = TFHE.asEuint32(value, inputProof);
+        secretReq32 = TFHE.and(secretReq32, TFHE.asEuint32(BYTE_MASK)); // truncates the passed value is just 1 byte
         uint32 mask = uint32(4294967295) ^ (uint32(255) << (8 * reqNum)); // mask to set to zero the previous requirement by this checkpoint
         euint32 shiftedSecretReq32 = TFHE.shl(secretReq32, 8 * reqNum);
         secretRequirements = TFHE.and(secretRequirements, TFHE.asEuint32(mask)); // set to zero the previous requirement by this checkpoint
