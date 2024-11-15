@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.24;
+
+import "fhevm/lib/TFHE.sol";
+
+contract Spy {
+    euint32 public secretRequirements; // encodes an array of 4 secret requirements, each 1 byte
+    address[4] internal checkpointAddresses; // address[i] can set byte nubmer i starting from least significant
+    address internal spyAddress;
+
+    event RequirementUpdated(address indexed checkpointAddress, uint8 indexed checkpointIndex);
+
+    constructor(
+        address _spyAddress,
+        address checkpoint0,
+        address checkpoint1,
+        address checkpoint2,
+        address checkpoint3
+    ) {
+        spyAddress = _spyAddress;
+        checkpointAddresses[0] = checkpoint0;
+        checkpointAddresses[1] = checkpoint1;
+        checkpointAddresses[2] = checkpoint2;
+        checkpointAddresses[3] = checkpoint3;
+        TFHE.allow(secretRequirements, spyAddress);
+    }
+
+    function setSecretRequirement(uint8 reqNum, einput value, bytes calldata inputProof) public {
+        require(reqNum < 4, "There are only 4 checkpoints, index out of bounds");
+        require(
+            checkpointAddresses[reqNum] == msg.sender,
+            "Given checkpoint byte can not be accessed from this address"
+        );
+        euint8 secretRequirement = TFHE.asEuint8(value, inputProof);
+        uint32 mask = uint32(4294967295) ^ (uint32(255) << (8 * reqNum)); // mask to set to zero the previous requirement by this checkpoint
+        euint32 secretReq32 = TFHE.asEuint32(secretRequirement);
+        euint32 shiftedSecretReq32 = TFHE.shl(secretReq32, 8 * reqNum);
+        secretRequirements = TFHE.and(secretRequirements, TFHE.asEuint32(mask)); // set to zero the previous requirement by this checkpoint
+        secretRequirements = TFHE.or(secretRequirements, shiftedSecretReq32); // set the new requirement by this checkpoint
+        emit RequirementUpdated(msg.sender, reqNum);
+    }
+}
