@@ -53,11 +53,16 @@ const chainIds = {
 };
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
+  const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY;
+  const bobPrivateKey = process.env.BOB_PRIVATE_KEY;
+  const carolPrivateKey = process.env.CAROL_PRIVATE_KEY;
+  const davePrivateKey = process.env.DAVE_PRIVATE_KEY;
+  const evePrivateKey = process.env.EVE_PRIVATE_KEY;
   let jsonRpcUrl: string;
   let gatewayUrl: string = "http://localhost:7077";
   switch (chain) {
     case "rivest":
-      jsonRpcUrl = "https://validator.rivest.inco.org";
+      jsonRpcUrl = "https://validator.rivest.inco.org/";
       gatewayUrl = "https://gateway.rivest.inco.org";
       break;
     case "local":
@@ -71,11 +76,7 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
       break;
   }
   return {
-    accounts: {
-      count: 10,
-      mnemonic,
-      path: "m/44'/60'/0'/0",
-    },
+    accounts: [deployerPrivateKey, bobPrivateKey, carolPrivateKey, davePrivateKey, evePrivateKey],
     chainId: chainIds[chain],
     url: jsonRpcUrl,
     gatewayUrl,

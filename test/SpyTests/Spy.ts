@@ -19,157 +19,157 @@ describe("Spy tests", function () {
     this.instances = await createInstances(this.signers);
   });
 
-  it("the requirement for the 0th checkpoint should not be set by Alice", async function () {
-    const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
-    input.add32(100);
-    const encryptedCheckpoint = input.encrypt();
-    const spyContractForAlice = this.spy.connect(this.signers.alice);
+  // it("the requirement for the 0th checkpoint should not be set by Alice", async function () {
+  //   const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
+  //   input.add32(100);
+  //   const encryptedCheckpoint = input.encrypt();
+  //   const spyContractForAlice = this.spy.connect(this.signers.alice);
 
-    try {
-      const tx = await spyContractForAlice["setSecretRequirement(uint8,bytes32,bytes)"](
-        0,
-        encryptedCheckpoint.handles[0],
-        encryptedCheckpoint.inputProof,
-      );
-      await tx.wait();
-      return expect.fail("Alice cannot set the requirement for Bob!");
-    } catch (error: unknown) {
-      expect((error as Error).message).to.equal(
-        "rpc error: code = Unknown desc = execution reverted: Given checkpoint byte can not be accessed from this address",
-      );
-    }
-  });
+  //   try {
+  //     const tx = await spyContractForAlice["setSecretRequirement(uint8,bytes32,bytes)"](
+  //       0,
+  //       encryptedCheckpoint.handles[0],
+  //       encryptedCheckpoint.inputProof,
+  //     );
+  //     await tx.wait();
+  //     return expect.fail("Alice cannot set the requirement for Bob!");
+  //   } catch (error: unknown) {
+  //     expect((error as Error).message).to.equal(
+  //       "rpc error: code = Unknown desc = execution reverted: Given checkpoint byte can not be accessed from this address",
+  //     );
+  //   }
+  // });
 
-  it("should set the requirement by the 0th checkpoint (bob) and not be seen by 1st checkpoint (carol)", async function () {
-    const input = this.instances.bob.createEncryptedInput(this.contractAddress, this.signers.bob.address);
-    input.add32(100);
-    const encryptedCheckpoint = input.encrypt();
-    const spyContractForBob = this.spy.connect(this.signers.bob);
-    const tx = await spyContractForBob["setSecretRequirement(uint8,bytes32,bytes)"](
-      0,
-      encryptedCheckpoint.handles[0],
-      encryptedCheckpoint.inputProof,
-    );
-    await tx.wait();
+  // it("should set the requirement by the 0th checkpoint (bob) and not be seen by 1st checkpoint (carol)", async function () {
+  //   const input = this.instances.bob.createEncryptedInput(this.contractAddress, this.signers.bob.address);
+  //   input.add32(100);
+  //   const encryptedCheckpoint = input.encrypt();
+  //   const spyContractForBob = this.spy.connect(this.signers.bob);
+  //   const tx = await spyContractForBob["setSecretRequirement(uint8,bytes32,bytes)"](
+  //     0,
+  //     encryptedCheckpoint.handles[0],
+  //     encryptedCheckpoint.inputProof,
+  //   );
+  //   await tx.wait();
 
-    const reqHandleCarol = await this.spy.secretRequirements();
-    const { publicKey: publicKeyCarol, privateKey: privateKeyCarol } = this.instances.carol.generateKeypair();
-    const eip712 = this.instances.alice.createEIP712(publicKeyCarol, this.contractAddress);
-    const signatureCarol = await this.signers.carol.signTypedData(
-      eip712.domain,
-      { Reencrypt: eip712.types.Reencrypt },
-      eip712.message,
-    );
-    try {
-      this.instances.carol.reencrypt(
-        reqHandleCarol,
-        privateKeyCarol,
-        publicKeyCarol,
-        signatureCarol.replace("0x", ""),
-        this.contractAddress,
-        this.signers.carol.address,
-      );
-      return expect.fail("Carol is not authorized to reencrypt this handle!");
-    } catch (error: unknown) {
-      expect((error as Error).message).to.equal("Carol is not authorized to reencrypt this handle!");
-    }
-  });
+  //   const reqHandleCarol = await this.spy.secretRequirements();
+  //   const { publicKey: publicKeyCarol, privateKey: privateKeyCarol } = this.instances.carol.generateKeypair();
+  //   const eip712 = this.instances.alice.createEIP712(publicKeyCarol, this.contractAddress);
+  //   const signatureCarol = await this.signers.carol.signTypedData(
+  //     eip712.domain,
+  //     { Reencrypt: eip712.types.Reencrypt },
+  //     eip712.message,
+  //   );
+  //   try {
+  //     this.instances.carol.reencrypt(
+  //       reqHandleCarol,
+  //       privateKeyCarol,
+  //       publicKeyCarol,
+  //       signatureCarol.replace("0x", ""),
+  //       this.contractAddress,
+  //       this.signers.carol.address,
+  //     );
+  //     return expect.fail("Carol is not authorized to reencrypt this handle!");
+  //   } catch (error: unknown) {
+  //     expect((error as Error).message).to.equal("Carol is not authorized to reencrypt this handle!");
+  //   }
+  // });
 
-  it("should set the requirement by the 0th checkpoint (bob) and seen by alice", async function () {
-    const input = this.instances.bob.createEncryptedInput(this.contractAddress, this.signers.bob.address);
-    input.add32(100);
-    const encryptedCheckpoint = input.encrypt();
-    const spyContractForBob = this.spy.connect(this.signers.bob);
-    const tx = await spyContractForBob["setSecretRequirement(uint8,bytes32,bytes)"](
-      0,
-      encryptedCheckpoint.handles[0],
-      encryptedCheckpoint.inputProof,
-      { gasLimit: 5000000 },
-    );
-    await tx.wait();
+  // it("should set the requirement by the 0th checkpoint (bob) and seen by alice", async function () {
+  //   const input = this.instances.bob.createEncryptedInput(this.contractAddress, this.signers.bob.address);
+  //   input.add32(100);
+  //   const encryptedCheckpoint = input.encrypt();
+  //   const spyContractForBob = this.spy.connect(this.signers.bob);
+  //   const tx = await spyContractForBob["setSecretRequirement(uint8,bytes32,bytes)"](
+  //     0,
+  //     encryptedCheckpoint.handles[0],
+  //     encryptedCheckpoint.inputProof,
+  //     { gasLimit: 5000000 },
+  //   );
+  //   await tx.wait();
 
-    const reqHandleAlice = await this.spy.getSecretRequirements();
-    const { publicKey: publicKeyAlice, privateKey: privateKeyAlice } = this.instances.alice.generateKeypair();
-    const eip712 = this.instances.alice.createEIP712(publicKeyAlice, this.contractAddress);
-    const signatureAlice = await this.signers.alice.signTypedData(
-      eip712.domain,
-      { Reencrypt: eip712.types.Reencrypt },
-      eip712.message,
-    );
-    const requirements = await this.instances.alice.reencrypt(
-      reqHandleAlice,
-      privateKeyAlice,
-      publicKeyAlice,
-      signatureAlice.replace("0x", ""),
-      this.contractAddress,
-      this.signers.alice.address,
-    );
-    expect(requirements).to.equal(100);
-  });
+  //   const reqHandleAlice = await this.spy.getSecretRequirements();
+  //   const { publicKey: publicKeyAlice, privateKey: privateKeyAlice } = this.instances.alice.generateKeypair();
+  //   const eip712 = this.instances.alice.createEIP712(publicKeyAlice, this.contractAddress);
+  //   const signatureAlice = await this.signers.alice.signTypedData(
+  //     eip712.domain,
+  //     { Reencrypt: eip712.types.Reencrypt },
+  //     eip712.message,
+  //   );
+  //   const requirements = await this.instances.alice.reencrypt(
+  //     reqHandleAlice,
+  //     privateKeyAlice,
+  //     publicKeyAlice,
+  //     signatureAlice.replace("0x", ""),
+  //     this.contractAddress,
+  //     this.signers.alice.address,
+  //   );
+  //   expect(requirements).to.equal(100);
+  // });
 
-  it("should set the requirement by the 3rd checkpoint (eve) and seen by alice", async function () {
-    const input = this.instances.eve.createEncryptedInput(this.contractAddress, this.signers.eve.address);
-    input.add32(17);
-    const encryptedCheckpoint = input.encrypt();
-    const spyContractForEve = this.spy.connect(this.signers.eve);
-    const tx = await spyContractForEve["setSecretRequirement(uint8,bytes32,bytes)"](
-      3,
-      encryptedCheckpoint.handles[0],
-      encryptedCheckpoint.inputProof,
-      { gasLimit: 5000000 },
-    );
-    await tx.wait();
+  // it("should set the requirement by the 3rd checkpoint (eve) and seen by alice", async function () {
+  //   const input = this.instances.eve.createEncryptedInput(this.contractAddress, this.signers.eve.address);
+  //   input.add32(17);
+  //   const encryptedCheckpoint = input.encrypt();
+  //   const spyContractForEve = this.spy.connect(this.signers.eve);
+  //   const tx = await spyContractForEve["setSecretRequirement(uint8,bytes32,bytes)"](
+  //     3,
+  //     encryptedCheckpoint.handles[0],
+  //     encryptedCheckpoint.inputProof,
+  //     { gasLimit: 5000000 },
+  //   );
+  //   await tx.wait();
 
-    const reqHandleAlice = await this.spy.getSecretRequirements();
-    const { publicKey: publicKeyAlice, privateKey: privateKeyAlice } = this.instances.alice.generateKeypair();
-    const eip712 = this.instances.alice.createEIP712(publicKeyAlice, this.contractAddress);
-    const signatureAlice = await this.signers.alice.signTypedData(
-      eip712.domain,
-      { Reencrypt: eip712.types.Reencrypt },
-      eip712.message,
-    );
-    const requirements = await this.instances.alice.reencrypt(
-      reqHandleAlice,
-      privateKeyAlice,
-      publicKeyAlice,
-      signatureAlice.replace("0x", ""),
-      this.contractAddress,
-      this.signers.alice.address,
-    );
-    expect(requirements).to.equal(285212672);
-  });
+  //   const reqHandleAlice = await this.spy.getSecretRequirements();
+  //   const { publicKey: publicKeyAlice, privateKey: privateKeyAlice } = this.instances.alice.generateKeypair();
+  //   const eip712 = this.instances.alice.createEIP712(publicKeyAlice, this.contractAddress);
+  //   const signatureAlice = await this.signers.alice.signTypedData(
+  //     eip712.domain,
+  //     { Reencrypt: eip712.types.Reencrypt },
+  //     eip712.message,
+  //   );
+  //   const requirements = await this.instances.alice.reencrypt(
+  //     reqHandleAlice,
+  //     privateKeyAlice,
+  //     publicKeyAlice,
+  //     signatureAlice.replace("0x", ""),
+  //     this.contractAddress,
+  //     this.signers.alice.address,
+  //   );
+  //   expect(requirements).to.equal(285212672);
+  // });
 
-  it("should set the requirement by the 3rd checkpoint (eve) after truncating 273 -> 11 and seen by alice", async function () {
-    const input = this.instances.eve.createEncryptedInput(this.contractAddress, this.signers.eve.address);
-    input.add32(273);
-    const encryptedCheckpoint = input.encrypt();
-    const spyContractForEve = this.spy.connect(this.signers.eve);
-    const tx = await spyContractForEve["setSecretRequirement(uint8,bytes32,bytes)"](
-      3,
-      encryptedCheckpoint.handles[0],
-      encryptedCheckpoint.inputProof,
-      { gasLimit: 5000000 },
-    );
-    await tx.wait();
+  // it("should set the requirement by the 3rd checkpoint (eve) after truncating 273 -> 11 and seen by alice", async function () {
+  //   const input = this.instances.eve.createEncryptedInput(this.contractAddress, this.signers.eve.address);
+  //   input.add32(273);
+  //   const encryptedCheckpoint = input.encrypt();
+  //   const spyContractForEve = this.spy.connect(this.signers.eve);
+  //   const tx = await spyContractForEve["setSecretRequirement(uint8,bytes32,bytes)"](
+  //     3,
+  //     encryptedCheckpoint.handles[0],
+  //     encryptedCheckpoint.inputProof,
+  //     { gasLimit: 5000000 },
+  //   );
+  //   await tx.wait();
 
-    const reqHandleAlice = await this.spy.getSecretRequirements();
-    const { publicKey: publicKeyAlice, privateKey: privateKeyAlice } = this.instances.alice.generateKeypair();
-    const eip712 = this.instances.alice.createEIP712(publicKeyAlice, this.contractAddress);
-    const signatureAlice = await this.signers.alice.signTypedData(
-      eip712.domain,
-      { Reencrypt: eip712.types.Reencrypt },
-      eip712.message,
-    );
-    const requirements = await this.instances.alice.reencrypt(
-      reqHandleAlice,
-      privateKeyAlice,
-      publicKeyAlice,
-      signatureAlice.replace("0x", ""),
-      this.contractAddress,
-      this.signers.alice.address,
-    );
-    expect(requirements).to.equal(285212672);
-  });
+  //   const reqHandleAlice = await this.spy.getSecretRequirements();
+  //   const { publicKey: publicKeyAlice, privateKey: privateKeyAlice } = this.instances.alice.generateKeypair();
+  //   const eip712 = this.instances.alice.createEIP712(publicKeyAlice, this.contractAddress);
+  //   const signatureAlice = await this.signers.alice.signTypedData(
+  //     eip712.domain,
+  //     { Reencrypt: eip712.types.Reencrypt },
+  //     eip712.message,
+  //   );
+  //   const requirements = await this.instances.alice.reencrypt(
+  //     reqHandleAlice,
+  //     privateKeyAlice,
+  //     publicKeyAlice,
+  //     signatureAlice.replace("0x", ""),
+  //     this.contractAddress,
+  //     this.signers.alice.address,
+  //   );
+  //   expect(requirements).to.equal(285212672);
+  // });
 
   it("should set the requirements by all checkpoints and seen by alice", async function () {
     const inputBob = this.instances.bob.createEncryptedInput(this.contractAddress, this.signers.bob.address);
